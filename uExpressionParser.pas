@@ -30,6 +30,7 @@ type
     function GetDecFormat:string;
   public
     constructor Create(ADecimalSeperator: Char = '.'; AMaxDecimals: integer = 2);
+    destructor Destroy; override;
     function ParseExpressionToString(Expression: string): string;
     function ParseExpressionToFloat(Expression: string): double;
     property DecimalSeperator: Char read FDecimalSeperator write SetDecimalSeperator;
@@ -218,6 +219,12 @@ begin
     Result := Result + num + ' ';
   for I := 0 to opList.Count-1 do
     Result := Result + opList[I].iOperator + ' ';
+end;
+
+destructor TExpressionParser.Destroy;
+begin
+  inherited;
+  FreeAndNil(FFormat);
 end;
 
 function TExpressionParser.GetDecFormat: string;
