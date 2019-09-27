@@ -169,62 +169,66 @@ begin
   Result := '';
   opList := TList<TOperatorRec>.Create;
   numStack := TStringList.Create;
-  Exp := StringReplace(Exp, '--', '+', [rfReplaceAll]);
-  Exp := StringReplace(Exp, ' ', '', [rfReplaceAll]);
-  num := '';
-  Exp := RemoveSqrt(exp);
-  Exp := RemoveSqr(exp);
+  try
+    Exp := StringReplace(Exp, '--', '+', [rfReplaceAll]);
+    Exp := StringReplace(Exp, ' ', '', [rfReplaceAll]);
+    num := '';
+    Exp := RemoveSqrt(exp);
+    Exp := RemoveSqr(exp);
 
-  for C in Exp do
-  begin
-    if (CharInSet(C, ['0'..'9'])or (C='.')) then
-      num := num + C
-    else if Pos(C, cOperators)>0 then
+    for C in Exp do
     begin
-      if num <> '' then
-        Result := Result + num + ' ';
-      num := '';
-      currOperator := FindOperator(C);
+      if (CharInSet(C, ['0'..'9'])or (C='.')) then
+        num := num + C
+      else if Pos(C, cOperators)>0 then
+      begin
+        if num <> '' then
+          Result := Result + num + ' ';
+        num := '';
+        currOperator := FindOperator(C);
 
-      if currOperator.iOperator = ')' then
-      begin
-        Depth := Depth-1;
-        Result := Result + opList[0].iOperator + ' ';
-        opList.Delete(0);
-        opList.Delete(0);
-      end
-      else if currOperator.iOperator = '(' then
-      begin
-        inc(Depth);
-        opList.Insert(0, currOperator);
-      end
-      else if currOperator.iOperator = '^' then
-        opList.Insert(0, currOperator)
-      else if opList.Count > 0 then
-      begin
-        if (opList[0].Precedence >= currOperator.Precedence) then
+        if currOperator.iOperator = ')' then
         begin
+          Depth := Depth-1;
           Result := Result + opList[0].iOperator + ' ';
           opList.Delete(0);
-          opList.Insert(0,currOperator);
+          opList.Delete(0);
+        end
+        else if currOperator.iOperator = '(' then
+        begin
+          inc(Depth);
+          opList.Insert(0, currOperator);
+        end
+        else if currOperator.iOperator = '^' then
+          opList.Insert(0, currOperator)
+        else if opList.Count > 0 then
+        begin
+          if (opList[0].Precedence >= currOperator.Precedence) then
+          begin
+            Result := Result + opList[0].iOperator + ' ';
+            opList.Delete(0);
+            opList.Insert(0,currOperator);
+          end
+          else
+            opList.Insert(0, currOperator);
         end
         else
-          opList.Insert(0, currOperator);
-      end
-      else
-        opList.Add(currOperator);
+          opList.Add(currOperator);
+      end;
     end;
-  end;
-  if num <> '' then
-    Result := Result + num + ' ';
-  for I := 0 to opList.Count-1 do
-    Result := Result + opList[I].iOperator + ' ';
+    if num <> '' then
+      Result := Result + num + ' ';
+    for I := 0 to opList.Count-1 do
+      Result := Result + opList[I].iOperator + ' ';
+  finally
+    opList.Free;
+    numStack.Free
+  end
 end;
 
 destructor TExpressionParser.Destroy;
 begin
   inherited;
-  FreeAndNil(FFormat);
 end;
 
 function TExpressionParser.GetDecFormat: string;
@@ -277,25 +281,30 @@ begin
   idx := 1;
   {$ENDIF}
   res := 0;
-  Stack := TList<double>.Create;
   rpn := StringReplace(rpn, ' ', ';',[rfReplaceAll]);
+  Stack := TList<double>.Create;
   rpnList := TStringList.Create;
-  rpnList.Delimiter := ';';
-  rpnList.StrictDelimiter := True;
-  rpnList.DelimitedText := rpn;
+  try
+    rpnList.Delimiter := ';';
+    rpnList.StrictDelimiter := True;
+    rpnList.DelimitedText := rpn;
 
-  Stack.Insert(0,StrToFloat(rpnList[0], FFormat));
-  for I := 1 to rpnList.Count-1 do
-  begin
-    if rpnList[I] = '' then
-      continue;
+    Stack.Insert(0,StrToFloat(rpnList[0], FFormat));
+    for I := 1 to rpnList.Count-1 do
+    begin
+      if rpnList[I] = '' then
+        continue;
 
-    if not CharInSet(rpnList[I][idx], ['0'..'9']) then
-      DoCalculation(Ord(rpnList[I][idx]))
-    else
-      Stack.Insert(0, StrToFloat(rpnList[I],FFormat));
+      if not CharInSet(rpnList[I][idx], ['0'..'9']) then
+        DoCalculation(Ord(rpnList[I][idx]))
+      else
+        Stack.Insert(0, StrToFloat(rpnList[I],FFormat));
+    end;
+    Result := stack[0];
+  finally
+    Stack.Free;
+    rpnList.Free;
   end;
-  Result := stack[0];
 end;
 
 end.
