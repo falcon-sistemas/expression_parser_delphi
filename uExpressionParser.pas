@@ -1,6 +1,7 @@
 unit uExpressionParser;
 
 interface
+
 Uses
   System.SysUtils,
   System.Classes,
@@ -161,11 +162,10 @@ var
   currOperator: TOperatorRec;
   num: string;
   C: Char;
-  I, Depth: integer;
+  I: integer;
 const
   cOperators = '^+-*/()';
 begin
-  Depth := 0;
   Result := '';
   opList := TList<TOperatorRec>.Create;
   numStack := TStringList.Create;
@@ -178,7 +178,7 @@ begin
 
     for C in Exp do
     begin
-      if (CharInSet(C, ['0'..'9'])or (C='.')) then
+      if (CharInSet(C, ['0'..'9']) or (C='.') or (Exp.Chars[0]='-')) then
         num := num + C
       else if Pos(C, cOperators)>0 then
       begin
@@ -189,14 +189,12 @@ begin
 
         if currOperator.iOperator = ')' then
         begin
-          Depth := Depth-1;
           Result := Result + opList[0].iOperator + ' ';
           opList.Delete(0);
           opList.Delete(0);
         end
         else if currOperator.iOperator = '(' then
         begin
-          inc(Depth);
           opList.Insert(0, currOperator);
         end
         else if currOperator.iOperator = '^' then
@@ -259,7 +257,6 @@ var
   Stack: TList<double>;
   rpnList: TStringList;
   I: integer;
-  res: integer;
   idx: Integer;
 const
   cOperators = '^+-*/';
@@ -280,7 +277,6 @@ begin
   {$ELSE}
   idx := 1;
   {$ENDIF}
-  res := 0;
   rpn := StringReplace(rpn, ' ', ';',[rfReplaceAll]);
   Stack := TList<double>.Create;
   rpnList := TStringList.Create;
