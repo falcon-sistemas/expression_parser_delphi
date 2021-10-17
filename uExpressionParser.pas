@@ -77,7 +77,6 @@ begin
   I := Pos('SQRT',S, os);
   if (I+1 > Length(s)) or (I=0) then
     Exit(S);
-  ob := Pos('(',S,I);
   Depth := 1;
   ob := Pos('(',S,I);
   J := ob;
