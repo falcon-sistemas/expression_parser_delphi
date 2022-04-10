@@ -64,6 +64,7 @@ end;
 /// <summary>
 /// Calculating square roots in advance.
 /// </summary>
+{$ZEROBASEDSTRINGS ON}
 function TExpressionParser.RemoveSqrt(S: string; os: integer =1): string;
 var
   I,J,
@@ -134,6 +135,7 @@ begin
   S := StringReplace(S, sSqr, Format('%s',[FormatFloat(Format(FloatForm,[GetDecFormat]), Sqr( StrToInt( num ) ) )]),[]);
   Result := RemoveSqr(S, I+1);
 end;
+{$ZEROBASEDSTRINGS OFF}
 
 constructor TExpressionParser.Create(ADecimalSeperator: Char; AMaxDecimals: integer);
 begin
@@ -143,6 +145,7 @@ begin
   FMaxDec := AMaxDecimals;
 end;
 
+{$ZEROBASEDSTRINGS ON}
 function TExpressionParser.CreateRPN(Exp: string): string;
 
   function FindOperator(Ch: Char): TOperatorRec;
@@ -222,6 +225,7 @@ begin
     numStack.Free
   end
 end;
+{$ZEROBASEDSTRINGS OFF}
 
 destructor TExpressionParser.Destroy;
 begin
@@ -251,6 +255,7 @@ begin
   Result := FormatFloat(Format(FloatForm,[GetDecFormat]),ProcessRPN(RevPolNotation))
 end;
 
+{$ZEROBASEDSTRINGS ON}
 function TExpressionParser.ProcessRPN(rpn: string): double;
 var
   Stack: TList<double>;
@@ -271,11 +276,7 @@ const
     Stack.Delete(1);
   end;
 begin
-  {$IF Defined(Android) OR Defined(IOS)}
   idx := 0;
-  {$ELSE}
-  idx := 1;
-  {$ENDIF}
   rpn := StringReplace(rpn, ' ', ';',[rfReplaceAll]);
   Stack := TList<double>.Create;
   rpnList := TStringList.Create;
@@ -301,5 +302,6 @@ begin
     rpnList.Free;
   end;
 end;
+{$ZEROBASEDSTRINGS OFF}
 
 end.
